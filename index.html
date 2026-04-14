@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westminster Watch — The Commons at a Glance</title>
+<meta name="description" content="A glanceable view of today's business in the House of Commons, for working journalists.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stone-light: #e8d4a2;
+    --stone-mid: #d4b87a;
+    --stone-dark: #b8965a;
+    --stone-shadow: #8a6d3e;
+    --paper: #f5ebd4;
+    --paper-dark: #ecdfb8;
+    --ink: #2a1f12;
+    --ink-soft: #4a3a24;
+    --ink-faint: #7a6542;
+    --verdigris: #2d6b5a;
+    --gilt: #c9a14a;
+    --accent: #8b1a1a;
+    --tower-width: 760px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(ellipse at top, #3a4a5c 0%, #1e2a38 50%, #0f1720 100%);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(2px 2px at 20% 15%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 60% 25%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 85% 10%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 40% 30%, rgba(255,255,255,0.25), transparent);
+    z-index: 0;
+  }
+  .tower {
+    max-width: var(--tower-width);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .clock-head {
+    padding: 20px 0 0;
+    filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+  }
+  .clock-head svg { display: block; width: 100%; height: auto; }
+  .tower-body {
+    position: relative;
+    background: var(--paper);
+    background-image: linear-gradient(var(--paper) 0%, var(--paper-dark) 100%);
+    box-shadow:
+      inset 8px 0 16px rgba(138, 109, 62, 0.25),
+      inset -8px 0 16px rgba(138, 109, 62, 0.25),
+      0 0 40px rgba(0,0,0,0.4);
+    border-left: 3px solid var(--stone-dark);
+    border-right: 3px solid var(--stone-dark);
+  }
+  .stonework {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 56px;
+    pointer-events: none;
+  }
+  .stonework.left { left: 0; }
+  .stonework.right { right: 0; }
+  .stonework svg { width: 100%; height: 100%; }
+  .content { padding: 0 88px 60px; position: relative; }
+
+  .masthead {
+    text-align: center;
+    padding: 36px 0 22px;
+    border-bottom: 3px double var(--ink);
+    margin-bottom: 8px;
+  }
+  .masthead h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900;
+    font-size: 46px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .masthead .latin {
+    font-family: 'IM Fell English SC', 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    margin-top: 14px;
+    text-transform: lowercase;
+  }
+  .masthead .date-line {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  section.block {
+    padding: 28px 0;
+    border-bottom: 1px solid rgba(42, 31, 18, 0.2);
+  }
+  section.block:last-child { border-bottom: none; }
+  .kicker {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .kicker .rule { flex: 1; height: 1px; background: var(--ink-faint); }
+  .kicker .status {
+    font-family: 'Lora', serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border: 1px solid var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .kicker .status.live { border-color: var(--accent); color: var(--accent); }
+  .kicker .status.dead { opacity: 0.5; }
+  h2.headline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  p { margin-bottom: 10px; }
+  p.standfirst {
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .status-card { text-align: center; padding: 16px 0; }
+  .status-card .big {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 54px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .status-card .big.red { color: var(--accent); }
+  .status-card .sub {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+  .division {
+    padding: 14px 0;
+    border-top: 1px solid rgba(42, 31, 18, 0.15);
+  }
+  .division:first-child { border-top: none; }
+  .division-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 6px;
+  }
+  .division-result {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    flex-wrap: wrap;
+  }
+  .tally {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 22px;
+  }
+  .outcome {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 2px 8px;
+    border: 1px solid var(--ink);
+    margin-left: auto;
+  }
+  .outcome.passed { background: var(--ink); color: var(--paper); }
+  .meta {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+  details { margin-top: 8px; }
+  details summary {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    cursor: pointer;
+    padding: 4px 0;
+    list-style: none;
+  }
+  details summary::before { content: '+ '; display: inline-block; margin-right: 4px; }
+  details[open] summary::before { content: '− '; }
+  .loading { font-style: italic; color: var(--ink-faint); font-size: 14px; }
+  .error-note {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    padding: 10px 14px;
+    border-left: 2px solid var(--ink-faint);
+    background: rgba(42, 31, 18, 0.04);
+    margin-top: 8px;
+  }
+  .colophon {
+    text-align: center;
+    padding: 40px 0 20px;
+    border-top: 3px double var(--ink);
+    margin-top: 20px;
+  }
+  .colophon p {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+  }
+  .colophon .last-updated {
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  @media (max-width: 760px) {
+    .content { padding: 0 64px 50px; }
+    .masthead h1 { font-size: 32px; }
+    h2.headline { font-size: 24px; }
+    .status-card .big { font-size: 42px; }
+  }
+  @media (max-width: 480px) {
+    .stonework { width: 36px; }
+    .content { padding: 0 46px 40px; }
+    .masthead h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="tower">
+
+  <div class="clock-head">
+    <svg viewBox="0 0 760 820" xmlns="http://www.w3.org/2000/svg" aria-label="Elizabeth Tower">
+      <defs>
+        <linearGradient id="stone-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#b8965a"/>
+          <stop offset="15%" stop-color="#d4b87a"/>
+          <stop offset="50%" stop-color="#e8d4a2"/>
+          <stop offset="85%" stop-color="#d4b87a"/>
+          <stop offset="100%" stop-color="#a8863e"/>
+        </linearGradient>
+        <linearGradient id="stone-light-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#c9a868"/>
+          <stop offset="50%" stop-color="#edd8a8"/>
+          <stop offset="100%" stop-color="#b8965a"/>
+        </linearGradient>
+        <linearGradient id="roof-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3d8572"/>
+          <stop offset="50%" stop-color="#2d6b5a"/>
+          <stop offset="100%" stop-color="#1a4a3d"/>
+        </linearGradient>
+        <linearGradient id="gilt-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#e6be5e"/>
+          <stop offset="50%" stop-color="#c9a14a"/>
+          <stop offset="100%" stop-color="#a07d2e"/>
+        </linearGradient>
+        <radialGradient id="face-grad">
+          <stop offset="0%" stop-color="#f8efd4"/>
+          <stop offset="100%" stop-color="#e8d9b0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Weathervane & spire -->
+      <line x1="380" y1="10" x2="380" y2="40" stroke="#c9a14a" stroke-width="2"/>
+      <circle cx="380" cy="12" r="3" fill="#e6be5e"/>
+      <path d="M 380 40 L 368 120 L 392 120 Z" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="1"/>
+      <ellipse cx="380" cy="122" rx="16" ry="4" fill="#c9a14a" stroke="#8a6d2e" stroke-width="1"/>
+
+      <!-- Ogee roof -->
+      <path d="M 380 122 C 380 122, 400 140, 420 180 C 440 220, 450 260, 450 290 L 310 290 C 310 260, 320 220, 340 180 C 360 140, 380 122, 380 122 Z"
+            fill="url(#roof-grad)" stroke="#0f2e24" stroke-width="1.5"/>
+      <path d="M 380 122 C 380 122, 400 140, 420 180 C 440 220, 450 260, 450 290" fill="none" stroke="#c9a14a" stroke-width="2"/>
+      <path d="M 380 122 C 380 122, 360 140, 340 180 C 320 220, 310 260, 310 290" fill="none" stroke="#c9a14a" stroke-width="2"/>
+      <path d="M 380 122 L 380 290" stroke="#c9a14a" stroke-width="1.5" opacity="0.6"/>
+      <ellipse cx="380" cy="210" rx="75" ry="8" fill="none" stroke="#c9a14a" stroke-width="1" opacity="0.7"/>
+      <ellipse cx="380" cy="250" rx="82" ry="8" fill="none" stroke="#c9a14a" stroke-width="1" opacity="0.7"/>
+
+      <!-- Cornice above belfry -->
+      <rect x="295" y="290" width="170" height="8" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="0.8"/>
+      <rect x="290" y="298" width="180" height="14" fill="url(#stone-light-grad)" stroke="#8a6d3e" stroke-width="1"/>
+      <g fill="#8a6d3e">
+        <rect x="296" y="302" width="4" height="6"/><rect x="306" y="302" width="4" height="6"/>
+        <rect x="316" y="302" width="4" height="6"/><rect x="326" y="302" width="4" height="6"/>
+        <rect x="336" y="302" width="4" height="6"/><rect x="346" y="302" width="4" height="6"/>
+        <rect x="356" y="302" width="4" height="6"/><rect x="366" y="302" width="4" height="6"/>
+        <rect x="376" y="302" width="4" height="6"/><rect x="386" y="302" width="4" height="6"/>
+        <rect x="396" y="302" width="4" height="6"/><rect x="406" y="302" width="4" height="6"/>
+        <rect x="416" y="302" width="4" height="6"/><rect x="426" y="302" width="4" height="6"/>
+        <rect x="436" y="302" width="4" height="6"/><rect x="446" y="302" width="4" height="6"/>
+        <rect x="456" y="302" width="4" height="6"/>
+      </g>
+
+      <!-- Belfry -->
+      <rect x="290" y="312" width="180" height="90" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="1.5"/>
+      <g>
+        <path d="M 305 395 L 305 340 Q 305 322 322 322 Q 339 322 339 340 L 339 395 Z" fill="#1a1208" stroke="#8a6d3e" stroke-width="1.5"/>
+        <line x1="308" y1="345" x2="336" y2="345" stroke="#5a4428"/><line x1="308" y1="355" x2="336" y2="355" stroke="#5a4428"/>
+        <line x1="308" y1="365" x2="336" y2="365" stroke="#5a4428"/><line x1="308" y1="375" x2="336" y2="375" stroke="#5a4428"/>
+        <line x1="308" y1="385" x2="336" y2="385" stroke="#5a4428"/>
+        <path d="M 361 395 L 361 340 Q 361 322 380 322 Q 399 322 399 340 L 399 395 Z" fill="#1a1208" stroke="#8a6d3e" stroke-width="1.5"/>
+        <line x1="364" y1="345" x2="396" y2="345" stroke="#5a4428"/><line x1="364" y1="355" x2="396" y2="355" stroke="#5a4428"/>
+        <line x1="364" y1="365" x2="396" y2="365" stroke="#5a4428"/><line x1="364" y1="375" x2="396" y2="375" stroke="#5a4428"/>
+        <line x1="364" y1="385" x2="396" y2="385" stroke="#5a4428"/>
+        <path d="M 421 395 L 421 340 Q 421 322 438 322 Q 455 322 455 340 L 455 395 Z" fill="#1a1208" stroke="#8a6d3e" stroke-width="1.5"/>
+        <line x1="424" y1="345" x2="452" y2="345" stroke="#5a4428"/><line x1="424" y1="355" x2="452" y2="355" stroke="#5a4428"/>
+        <line x1="424" y1="365" x2="452" y2="365" stroke="#5a4428"/><line x1="424" y1="375" x2="452" y2="375" stroke="#5a4428"/>
+        <line x1="424" y1="385" x2="452" y2="385" stroke="#5a4428"/>
+      </g>
+      <rect x="288" y="402" width="184" height="6" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="0.6"/>
+      <rect x="285" y="408" width="190" height="12" fill="url(#stone-light-grad)" stroke="#8a6d3e" stroke-width="1"/>
+
+      <!-- Corner pinnacles flanking clock stage -->
+      <path d="M 270 480 L 276 430 L 282 480 Z" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="1"/>
+      <rect x="272" y="480" width="8" height="160" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="1"/>
+      <path d="M 478 480 L 484 430 L 490 480 Z" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="1"/>
+      <rect x="480" y="480" width="8" height="160" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="1"/>
+
+      <!-- Clock stage -->
+      <rect x="282" y="420" width="196" height="230" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="2"/>
+
+      <!-- Gilded clock surround (square) -->
+      <rect x="290" y="440" width="180" height="180" fill="#1a4a3d" stroke="#c9a14a" stroke-width="3"/>
+      <g fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="0.5">
+        <path d="M 290 440 L 330 440 Q 300 440 290 480 Z"/>
+        <path d="M 470 440 L 430 440 Q 460 440 470 480 Z"/>
+        <path d="M 290 620 L 330 620 Q 300 620 290 580 Z"/>
+        <path d="M 470 620 L 430 620 Q 460 620 470 580 Z"/>
+      </g>
+
+      <!-- Clock face -->
+      <circle cx="380" cy="530" r="82" fill="url(#face-grad)" stroke="#8a6d2e" stroke-width="2"/>
+      <circle cx="380" cy="530" r="78" fill="none" stroke="#c9a14a" stroke-width="1.5"/>
+      <circle cx="380" cy="530" r="74" fill="none" stroke="#8a6d2e" stroke-width="0.5"/>
+
+      <!-- Roman numerals -->
+      <g font-family="Playfair Display, serif" font-size="14" font-weight="700" fill="#2a1f12" text-anchor="middle">
+        <text x="380" y="462">XII</text><text x="418" y="470">I</text><text x="446" y="498">II</text>
+        <text x="456" y="536">III</text><text x="446" y="574">IV</text><text x="418" y="598">V</text>
+        <text x="380" y="606">VI</text><text x="342" y="598">VII</text><text x="314" y="574">VIII</text>
+        <text x="304" y="536">IX</text><text x="314" y="498">X</text><text x="342" y="470">XI</text>
+      </g>
+
+      <!-- Tick marks -->
+      <g stroke="#2a1f12" stroke-width="1.2" stroke-linecap="round">
+        <line x1="380" y1="452" x2="380" y2="458"/><line x1="419" y1="457" x2="417" y2="463"/>
+        <line x1="451" y1="482" x2="448" y2="487"/><line x1="458" y1="530" x2="452" y2="530"/>
+        <line x1="451" y1="578" x2="448" y2="573"/><line x1="419" y1="603" x2="417" y2="597"/>
+        <line x1="380" y1="608" x2="380" y2="602"/><line x1="341" y1="603" x2="343" y2="597"/>
+        <line x1="309" y1="578" x2="312" y2="573"/><line x1="302" y1="530" x2="308" y2="530"/>
+        <line x1="309" y1="482" x2="312" y2="487"/><line x1="341" y1="457" x2="343" y2="463"/>
+      </g>
+
+      <!-- Hands -->
+      <g id="hand-hour" transform="rotate(0 380 530)">
+        <line x1="380" y1="530" x2="380" y2="478" stroke="#1a1208" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <g id="hand-minute" transform="rotate(0 380 530)">
+        <line x1="380" y1="530" x2="380" y2="462" stroke="#1a1208" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="hand-second" transform="rotate(0 380 530)">
+        <line x1="380" y1="530" x2="380" y2="458" stroke="#8b1a1a" stroke-width="1" stroke-linecap="round"/>
+      </g>
+      <circle cx="380" cy="530" r="5" fill="#c9a14a" stroke="#2a1f12" stroke-width="1"/>
+
+      <!-- Latin inscription band -->
+      <rect x="282" y="650" width="196" height="20" fill="#1a4a3d" stroke="#c9a14a" stroke-width="1.5"/>
+      <text x="380" y="664" font-family="IM Fell English SC, serif" font-size="9"
+            fill="#c9a14a" text-anchor="middle" letter-spacing="1">
+        DOMINE · SALVAM · FAC · REGEM · NOSTRUM
+      </text>
+
+      <!-- Base of clock stage -->
+      <rect x="282" y="670" width="196" height="30" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="1.5"/>
+
+      <!-- String course / transition -->
+      <rect x="272" y="700" width="216" height="8" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="0.8"/>
+      <rect x="268" y="708" width="224" height="18" fill="url(#stone-light-grad)" stroke="#8a6d3e" stroke-width="1"/>
+      <g fill="#c9a14a" stroke="#8a6d2e" stroke-width="0.5">
+        <circle cx="295" cy="717" r="3"/><circle cx="325" cy="717" r="3"/>
+        <circle cx="355" cy="717" r="3"/><circle cx="385" cy="717" r="3"/>
+        <circle cx="415" cy="717" r="3"/><circle cx="445" cy="717" r="3"/>
+        <circle cx="475" cy="717" r="3"/>
+      </g>
+      <rect x="272" y="726" width="216" height="6" fill="url(#gilt-grad)" stroke="#8a6d2e" stroke-width="0.5"/>
+
+      <!-- Shaft top with lancet windows -->
+      <rect x="260" y="732" width="240" height="88" fill="url(#stone-grad)" stroke="#8a6d3e" stroke-width="1.5"/>
+      <g fill="#1a4a3d" stroke="#8a6d3e" stroke-width="1">
+        <path d="M 300 810 L 300 760 Q 300 748 310 748 Q 320 748 320 760 L 320 810 Z"/>
+        <path d="M 340 810 L 340 760 Q 340 748 350 748 Q 360 748 360 760 L 360 810 Z"/>
+        <path d="M 400 810 L 400 760 Q 400 748 410 748 Q 420 748 420 760 L 420 810 Z"/>
+        <path d="M 440 810 L 440 760 Q 440 748 450 748 Q 460 748 460 760 L 460 810 Z"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="tower-body">
+    <div class="stonework left" aria-hidden="true">
+      <svg viewBox="0 0 56 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="stone-grad-side-l" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#a8863e"/>
+            <stop offset="50%" stop-color="#d4b87a"/>
+            <stop offset="100%" stop-color="#e8d4a2"/>
+          </linearGradient>
+        </defs>
+        <rect width="56" height="100%" fill="url(#stone-grad-side-l)"/>
+        <g stroke="#8a6d3e" stroke-width="0.8" opacity="0.5">
+          <line x1="0" y1="30" x2="56" y2="30"/><line x1="0" y1="60" x2="56" y2="60"/>
+          <line x1="0" y1="90" x2="56" y2="90"/><line x1="0" y1="120" x2="56" y2="120"/>
+          <line x1="0" y1="150" x2="56" y2="150"/><line x1="0" y1="180" x2="56" y2="180"/>
+          <line x1="0" y1="210" x2="56" y2="210"/><line x1="0" y1="240" x2="56" y2="240"/>
+          <line x1="0" y1="270" x2="56" y2="270"/><line x1="0" y1="300" x2="56" y2="300"/>
+          <line x1="0" y1="330" x2="56" y2="330"/><line x1="0" y1="360" x2="56" y2="360"/>
+          <line x1="0" y1="390" x2="56" y2="390"/><line x1="0" y1="420" x2="56" y2="420"/>
+          <line x1="0" y1="450" x2="56" y2="450"/><line x1="0" y1="480" x2="56" y2="480"/>
+          <line x1="0" y1="510" x2="56" y2="510"/><line x1="0" y1="540" x2="56" y2="540"/>
+          <line x1="0" y1="570" x2="56" y2="570"/><line x1="0" y1="600" x2="56" y2="600"/>
+          <line x1="0" y1="630" x2="56" y2="630"/><line x1="0" y1="660" x2="56" y2="660"/>
+          <line x1="0" y1="690" x2="56" y2="690"/><line x1="0" y1="720" x2="56" y2="720"/>
+          <line x1="0" y1="750" x2="56" y2="750"/><line x1="0" y1="780" x2="56" y2="780"/>
+          <line x1="0" y1="810" x2="56" y2="810"/><line x1="0" y1="840" x2="56" y2="840"/>
+          <line x1="0" y1="870" x2="56" y2="870"/><line x1="0" y1="900" x2="56" y2="900"/>
+          <line x1="0" y1="930" x2="56" y2="930"/><line x1="0" y1="960" x2="56" y2="960"/>
+          <line x1="0" y1="990" x2="56" y2="990"/>
+        </g>
+      </svg>
+    </div>
+    <div class="stonework right" aria-hidden="true">
+      <svg viewBox="0 0 56 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="stone-grad-side-r" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#e8d4a2"/>
+            <stop offset="50%" stop-color="#d4b87a"/>
+            <stop offset="100%" stop-color="#a8863e"/>
+          </linearGradient>
+        </defs>
+        <rect width="56" height="100%" fill="url(#stone-grad-side-r)"/>
+        <g stroke="#8a6d3e" stroke-width="0.8" opacity="0.5">
+          <line x1="0" y1="30" x2="56" y2="30"/><line x1="0" y1="60" x2="56" y2="60"/>
+          <line x1="0" y1="90" x2="56" y2="90"/><line x1="0" y1="120" x2="56" y2="120"/>
+          <line x1="0" y1="150" x2="56" y2="150"/><line x1="0" y1="180" x2="56" y2="180"/>
+          <line x1="0" y1="210" x2="56" y2="210"/><line x1="0" y1="240" x2="56" y2="240"/>
+          <line x1="0" y1="270" x2="56" y2="270"/><line x1="0" y1="300" x2="56" y2="300"/>
+          <line x1="0" y1="330" x2="56" y2="330"/><line x1="0" y1="360" x2="56" y2="360"/>
+          <line x1="0" y1="390" x2="56" y2="390"/><line x1="0" y1="420" x2="56" y2="420"/>
+          <line x1="0" y1="450" x2="56" y2="450"/><line x1="0" y1="480" x2="56" y2="480"/>
+          <line x1="0" y1="510" x2="56" y2="510"/><line x1="0" y1="540" x2="56" y2="540"/>
+          <line x1="0" y1="570" x2="56" y2="570"/><line x1="0" y1="600" x2="56" y2="600"/>
+          <line x1="0" y1="630" x2="56" y2="630"/><line x1="0" y1="660" x2="56" y2="660"/>
+          <line x1="0" y1="690" x2="56" y2="690"/><line x1="0" y1="720" x2="56" y2="720"/>
+          <line x1="0" y1="750" x2="56" y2="750"/><line x1="0" y1="780" x2="56" y2="780"/>
+          <line x1="0" y1="810" x2="56" y2="810"/><line x1="0" y1="840" x2="56" y2="840"/>
+          <line x1="0" y1="870" x2="56" y2="870"/><line x1="0" y1="900" x2="56" y2="900"/>
+          <line x1="0" y1="930" x2="56" y2="930"/><line x1="0" y1="960" x2="56" y2="960"/>
+          <line x1="0" y1="990" x2="56" y2="990"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="content">
+      <header class="masthead">
+        <h1>Westminster Watch</h1>
+        <div class="latin">ex turri vigilamus</div>
+        <div class="date-line" id="date-line">—</div>
+      </header>
+
+      <section class="block">
+        <div class="kicker">
+          <span>The House</span>
+          <span class="rule"></span>
+          <span class="status" id="status-house">checking</span>
+        </div>
+        <div class="status-card">
+          <div class="big" id="sitting-status">—</div>
+          <div class="sub" id="sitting-sub">determining status</div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="kicker">
+          <span>Recent Divisions</span>
+          <span class="rule"></span>
+          <span class="status" id="status-divisions">checking</span>
+        </div>
+        <h2 class="headline">How the House Voted</h2>
+        <p class="standfirst">The most recent divisions recorded in the Commons chamber.</p>
+        <div id="divisions-list">
+          <div class="loading">Loading divisions…</div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="kicker">
+          <span>Order Paper</span>
+          <span class="rule"></span>
+          <span class="status dead">v2</span>
+        </div>
+        <h2 class="headline">Today in the Chamber</h2>
+        <p class="standfirst">Scheduled business requires Parliament's calendar feed, which is not CORS-permissive for direct browser requests. A GitHub Actions rebuild (fetching server-side, committing a static JSON file to the repo) is the route for the next iteration.</p>
+      </section>
+
+      <section class="block">
+        <div class="kicker"><span>Diagnostics</span><span class="rule"></span></div>
+        <details>
+          <summary>Endpoint probe results (tap to expand)</summary>
+          <div id="diagnostics" style="margin-top: 12px; font-family: monospace; font-size: 12px; line-height: 1.6; color: var(--ink-soft);">
+            Results will appear after page load.
+          </div>
+        </details>
+      </section>
+
+      <footer class="colophon">
+        <p>Westminster Watch · a glanceable view from the tower</p>
+        <p class="last-updated" id="last-updated">—</p>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script>
+const diagnostics = [];
+function logDiag(label, status, detail) {
+  diagnostics.push({ label, status, detail });
+  console.log(`[WW] ${label}: ${status}`, detail || '');
+}
+
+function updateClock() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  }).formatToParts(now);
+  const get = t => parts.find(p => p.type === t)?.value;
+  const h = parseInt(get('hour'), 10) % 12;
+  const m = parseInt(get('minute'), 10);
+  const s = parseInt(get('second'), 10);
+  document.getElementById('hand-second').setAttribute('transform', `rotate(${s * 6} 380 530)`);
+  document.getElementById('hand-minute').setAttribute('transform', `rotate(${m * 6 + s * 0.1} 380 530)`);
+  document.getElementById('hand-hour').setAttribute('transform', `rotate(${h * 30 + m * 0.5} 380 530)`);
+  document.getElementById('date-line').textContent =
+    `${get('weekday')} · ${get('day')} ${get('month')} ${get('year')} · ${get('hour')}:${get('minute')} London`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+const CORS_PROXY = 'https://corsproxy.io/?url=';
+
+async function fetchJSON(url, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(t);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(t);
+    throw err;
+  }
+}
+
+async function fetchWithProxyFallback(url, label) {
+  try {
+    const data = await fetchJSON(url);
+    logDiag(label, 'OK (direct)', url);
+    return data;
+  } catch (err) {
+    logDiag(label, 'direct failed', err.message);
+  }
+  try {
+    const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+    const data = await fetchJSON(proxyUrl);
+    logDiag(label, 'OK (proxy)', url);
+    return data;
+  } catch (err) {
+    logDiag(label, 'proxy failed', err.message);
+    throw err;
+  }
+}
+
+function setStatus(id, ok, label) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = label || (ok ? 'live' : 'unavailable');
+  el.className = 'status ' + (ok ? 'live' : 'dead');
+}
+
+function escapeHTML(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+async function loadSittingStatus(recentDivisions) {
+  try {
+    if (!recentDivisions || !recentDivisions.length) throw new Error('no division data');
+    const todayLondon = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+    const mostRecent = recentDivisions[0];
+    const divDate = mostRecent.Date ? mostRecent.Date.slice(0, 10) : null;
+    if (divDate === todayLondon) {
+      document.getElementById('sitting-status').textContent = 'Sitting';
+      document.getElementById('sitting-status').classList.add('red');
+      document.getElementById('sitting-sub').textContent = 'Division recorded today';
+    } else {
+      const hour = parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()), 10);
+      const day = new Date().toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'long' });
+      const weekday = !['Saturday', 'Sunday'].includes(day);
+      const likely = weekday && hour >= 9 && hour <= 22;
+      document.getElementById('sitting-status').textContent = likely ? 'Possibly Sitting' : 'Not Sitting';
+      document.getElementById('sitting-sub').textContent = `Last division: ${divDate || 'unknown'}`;
+    }
+    setStatus('status-house', true);
+  } catch (err) {
+    document.getElementById('sitting-status').textContent = 'Unknown';
+    document.getElementById('sitting-sub').textContent = 'Could not determine status';
+    setStatus('status-house', false);
+  }
+}
+
+async function loadDivisions() {
+  const url = 'https://commonsvotes-api.parliament.uk/data/divisions.json/search?queryParameters.take=5';
+  try {
+    const data = await fetchWithProxyFallback(url, 'Commons Votes');
+    const divisions = Array.isArray(data) ? data : [];
+    const list = document.getElementById('divisions-list');
+    if (!divisions.length) {
+      list.innerHTML = '<div class="loading">No recent divisions returned.</div>';
+      setStatus('status-divisions', true);
+      return divisions;
+    }
+    list.innerHTML = '';
+    divisions.forEach(div => {
+      const ayes = div.AyeCount ?? 0;
+      const noes = div.NoCount ?? 0;
+      const passed = ayes > noes;
+      const date = div.Date ? new Date(div.Date).toLocaleDateString('en-GB', {
+        timeZone: 'Europe/London', day: 'numeric', month: 'short', year: 'numeric'
+      }) : '';
+      const title = div.Title || 'Untitled Division';
+      const el = document.createElement('div');
+      el.className = 'division';
+      el.innerHTML = `
+        <div class="division-title">${escapeHTML(title)}</div>
+        <div class="division-result">
+          <span>Ayes <span class="tally">${ayes}</span></span>
+          <span>Noes <span class="tally">${noes}</span></span>
+          <span class="outcome ${passed ? 'passed' : ''}">${passed ? 'Passed' : 'Rejected'}</span>
+        </div>
+        <div class="meta">${escapeHTML(date)}</div>
+      `;
+      list.appendChild(el);
+    });
+    setStatus('status-divisions', true);
+    return divisions;
+  } catch (err) {
+    document.getElementById('divisions-list').innerHTML =
+      '<div class="error-note">Commons Votes feed unavailable — both direct and proxy attempts failed. See diagnostics below.</div>';
+    setStatus('status-divisions', false);
+    return [];
+  }
+}
+
+function renderDiagnostics() {
+  const el = document.getElementById('diagnostics');
+  el.innerHTML = diagnostics.length
+    ? diagnostics.map(d => `<div>[${escapeHTML(d.status)}] <strong>${escapeHTML(d.label)}</strong><br>&nbsp;&nbsp;${escapeHTML(d.detail || '')}</div>`).join('<br>')
+    : 'No probe results recorded.';
+}
+
+(async function boot() {
+  const divisions = await loadDivisions();
+  await loadSittingStatus(divisions);
+  renderDiagnostics();
+  const updated = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'long'
+  }).format(new Date());
+  document.getElementById('last-updated').textContent = `Last refreshed · ${updated} London`;
+})();
+</script>
+</body>
+</html>
