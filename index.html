@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>House of Commons — Live Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+        color: #222;
+        line-height: 1.5;
+    }
+    h1 {
+        text-align: center;
+        color: #006647;
+    }
+    h2 {
+        margin-top: 40px;
+        color: #006647;
+        border-bottom: 2px solid #006647;
+        padding-bottom: 5px;
+    }
+    .item {
+        background: white;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .loading {
+        color: #777;
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+
+<h1>House of Commons — Live Dashboard</h1>
+
+<h2>📅 Today’s Commons Business</h2>
+<div id="business" class="loading">Loading…</div>
+
+<h2>🗳️ Latest Commons Votes</h2>
+<div id="votes" class="loading">Loading…</div>
+
+<h2>📄 Written Statements Today</h2>
+<div id="statements" class="loading">Loading…</div>
+
+<h2>📘 Bills Being Debated Today</h2>
+<div id="bills" class="loading">Loading…</div>
+
+<h2>❓ Written & Oral Questions</h2>
+<div id="questions" class="loading">Loading…</div>
+
+<h2>🗣️ Live Hansard Summary</h2>
+<div id="hansard" class="loading">Loading…</div>
+
+<script>
+// Proxy helper
+function proxy(url) {
+    return "https://corsproxy.io/?" + encodeURIComponent(url);
+}
+
+// Safe JSON fetch
+async function get(url) {
+    try {
+        const res = await fetch(proxy(url));
+        return await res.json();
+    } catch {
+        return null;
+    }
+}
+
+// 1. Commons Business
+(async () => {
+    const data = await get("https://api.parliament.uk/odata/CommonsBusiness?$top=10");
+    const el = document.getElementById("business");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load Commons business.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(b =>
+        `<div class="item">
+            <strong>${b.Title}</strong><br>
+            Type: ${b.BusinessType}<br>
+            Date: ${b.Date}
+        </div>`
+    ).join("");
+})();
+
+// 2. Votes
+(async () => {
+    const data = await get("https://api.parliament.uk/odata/CommonsDivisions?$top=5&$orderby=Date%20desc");
+    const el = document.getElementById("votes");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load division data.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(v =>
+        `<div class="item">
+            <strong>${v.Title}</strong><br>
+            Ayes: ${v.AyesCount} — Noes: ${v.NoesCount}<br>
+            Date: ${v.Date}
+        </div>`
+    ).join("");
+})();
+
+// 3. Written Statements
+(async () => {
+    const data = await get("https://questions-statements-api.parliament.uk/api/writtenstatements?take=5");
+    const el = document.getElementById("statements");
+
+    if (!data || !data.items) {
+        el.textContent = "Unable to load written statements.";
+        return;
+    }
+
+    el.innerHTML = data.items.map(s =>
+        `<div class="item">
+            <strong>${s.title}</strong><br>
+            Department: ${s.departmentName}<br>
+            Date: ${s.dateMade}<br>
+            Summary: ${s.summary || "No summary available."}
+        </div>`
+    ).join("");
+})();
+
+// 4. Bills
+(async () => {
+    const data = await get("https://api.parliament.uk/odata/Bills?$top=10");
+    const el = document.getElementById("bills");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load bills.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(b =>
+        `<div class="item">
+            <strong>${b.Title}</strong><br>
+            Stage: ${b.CurrentStage}<br>
+            Sponsor: ${b.Sponsor || "Unknown"}
+        </div>`
+    ).join("");
+})();
+
+// 5. Questions
+(async () => {
+    const data = await get("https://questions-statements-api.parliament.uk/api/writtenquestions?take=5");
+    const el = document.getElementById("questions");
+
+    if (!data || !data.items) {
+        el.textContent = "Unable to load questions.";
+        return;
+    }
+
+    el.innerHTML = data.items.map(q =>
+        `<div class="item">
+            <strong>${q.questionText}</strong><br>
+            Asked by: ${q.memberName}<br>
+            Department: ${q.departmentName}<br>
+            Date: ${q.dateTabled}
+        </div>`
+    ).join("");
+})();
+
+// 6. Hansard Summary (HTML scrape)
+(async () => {
+    const url = "https://hansard.parliament.uk/commons";
+    const res = await fetch(proxy(url));
+    const text = await res.text();
+    const el = document.getElementById("hansard");
+
+    // Extract first few lines of debate text
+    const matches = text.match(/<p class=".*?">(.*?)<\/p>/g);
+
+    if (!matches) {
+        el.textContent = "Unable to load Hansard summary.";
+        return;
+    }
+
+    el.innerHTML = matches.slice(0, 5).map(p =>
+        `<div class="item">${p.replace(/<[^>]+>/g, "")}</div>`
+    ).join("");
+})();
+</script>
+
+</body>
+</html>
