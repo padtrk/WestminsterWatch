@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>House of Commons — Live Today</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f5f5f5;
+        color: #222;
+    }
+    header {
+        background: #006647;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    section {
+        background: white;
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 900px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        color: #006647;
+    }
+    .loading {
+        color: #777;
+        font-style: italic;
+    }
+    a {
+        color: #006647;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>House of Commons — Live Today</h1>
+    <p>Automatically updated using open Parliament data</p>
+</header>
+
+<section>
+    <h2>📅 Today’s Commons Business</h2>
+    <div id="business" class="loading">Loading…</div>
+</section>
+
+<section>
+    <h2>🗣️ Live Hansard (Rolling Transcript)</h2>
+    <p><a href="https://hansard.parliament.uk/commons" target="_blank">Open Hansard Live</a></p>
+</section>
+
+<section>
+    <h2>🎥 Live Chamber Video</h2>
+    <p><a href="https://www.parliamentlive.tv/Commons" target="_blank">Watch the Commons Live</a></p>
+</section>
+
+<section>
+    <h2>🗳️ Live Votes (Divisions)</h2>
+    <div id="votes" class="loading">Loading…</div>
+</section>
+
+<section>
+    <h2>📄 Written Statements Today</h2>
+    <div id="statements" class="loading">Loading…</div>
+</section>
+
+<section>
+    <h2>❓ Written & Oral Questions</h2>
+    <p><a href="https://questions-statements.parliament.uk/" target="_blank">View Questions</a></p>
+</section>
+
+<section>
+    <h2>📘 Bills Being Debated Today</h2>
+    <div id="bills" class="loading">Loading…</div>
+</section>
+
+<script>
+// Helper: fetch JSON safely
+async function fetchJSON(url) {
+    try {
+        const res = await fetch(url);
+        return await res.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+// 1. Today's Commons Business (OData)
+(async () => {
+    const data = await fetchJSON("https://api.parliament.uk/odata/CommonsBusiness?$top=10");
+    const el = document.getElementById("business");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load Commons business.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(item =>
+        `<p><strong>${item.Title}</strong><br>${item.BusinessType}</p>`
+    ).join("");
+})();
+
+// 2. Live Votes (Commons Divisions)
+(async () => {
+    const data = await fetchJSON("https://api.parliament.uk/odata/CommonsDivisions?$top=5&$orderby=Date%20desc");
+    const el = document.getElementById("votes");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load division data.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(div =>
+        `<p><strong>${div.Title}</strong><br>
+         Date: ${div.Date}<br>
+         Ayes: ${div.AyesCount} — Noes: ${div.NoesCount}</p>`
+    ).join("");
+})();
+
+// 3. Written Statements Today
+(async () => {
+    const data = await fetchJSON("https://questions-statements-api.parliament.uk/api/writtenstatements?take=5");
+    const el = document.getElementById("statements");
+
+    if (!data || !data.items) {
+        el.textContent = "Unable to load written statements.";
+        return;
+    }
+
+    el.innerHTML = data.items.map(st =>
+        `<p><strong>${st.title}</strong><br>
+         ${st.dateMade}<br>
+         <a href="https://questions-statements.parliament.uk/written-statements/detail/${st.uin}" target="_blank">Read statement</a></p>`
+    ).join("");
+})();
+
+// 4. Bills being debated today
+(async () => {
+    const data = await fetchJSON("https://api.parliament.uk/odata/Bills?$top=10");
+    const el = document.getElementById("bills");
+
+    if (!data || !data.value) {
+        el.textContent = "Unable to load bills.";
+        return;
+    }
+
+    el.innerHTML = data.value.map(bill =>
+        `<p><strong>${bill.Title}</strong><br>
+         Current Stage: ${bill.CurrentStage}</p>`
+    ).join("");
+})();
+</script>
+
+</body>
+</html>
