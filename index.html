@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westminster Watch — The Commons at a Glance</title>
+<meta name="description" content="A glanceable view of today's business in the House of Commons, for working journalists.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Watercolour honey stone — from the reference */
+    --ochre-pale:  #f0dcac;
+    --ochre:       #d9b677;
+    --ochre-mid:   #c09554;
+    --ochre-deep:  #9e7636;
+    --ochre-shadow:#6b4c1e;
+    --paper:       #f5e8c8;
+    --paper-warm:  #ebd9a8;
+
+    --ink:         #1e1810;
+    --ink-soft:    #3e3220;
+    --ink-faint:   #7a6542;
+
+    --roof-iron:   #2a2620;
+    --roof-shade:  #1a1814;
+    --gilt:        #b8893a;
+    --gilt-bright: #d4a84a;
+    --window:      #2a3440;
+    --window-deep: #161d26;
+
+    --accent:      #8b1a1a;
+
+    /* All three SVGs share this width. This is the tower. */
+    --tower-width: 560px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    /* Sky gradient — the tower stands against it */
+    background:
+      linear-gradient(180deg,
+        #b8c9d6 0%,
+        #a8bdc8 20%,
+        #9cb0bc 40%,
+        #8fa4b0 100%);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Watercolour paper texture overlay on everything */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.25;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' seed='8'/><feColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.15 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>");
+  }
+
+  /* Subtle watercolour wash bleeding around the tower */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse 600px 100% at 50% 50%, rgba(217, 182, 119, 0.15) 0%, transparent 70%);
+  }
+
+  /* ============================================================
+     THE TOWER — three stacked sections, ALL the same width.
+     This is the critical constraint: head, body, base all align.
+     ============================================================ */
+  .tower {
+    max-width: var(--tower-width);
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .tower svg,
+  .tower .shaft {
+    display: block;
+    width: 100%;
+  }
+
+  .tower-head svg { height: auto; }
+
+  /* ============================================================
+     THE SHAFT — the scrollable content area.
+     Same width as the SVG above. Continues the stonework visually.
+     ============================================================ */
+  .shaft {
+    position: relative;
+    background: var(--ochre);
+    /* Painted stone texture using multiple gradients */
+    background-image:
+      linear-gradient(90deg,
+        var(--ochre-shadow) 0%,
+        var(--ochre-deep) 4%,
+        var(--ochre-mid) 12%,
+        var(--ochre) 30%,
+        var(--ochre-pale) 50%,
+        var(--ochre) 70%,
+        var(--ochre-mid) 88%,
+        var(--ochre-deep) 96%,
+        var(--ochre-shadow) 100%);
+    box-shadow:
+      inset 0 4px 8px rgba(107, 76, 30, 0.3),
+      inset 0 -4px 8px rgba(107, 76, 30, 0.3);
+  }
+
+  /* Pointed-arch windows running up the shaft as fixed decoration on the flanks */
+  .shaft-windows {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+  .shaft-windows svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Content column — inset from the stone walls */
+  .content {
+    position: relative;
+    padding: 40px 96px 60px;
+    background: rgba(245, 232, 200, 0.92);
+    margin: 0 40px;
+    border-left: 2px solid var(--ochre-shadow);
+    border-right: 2px solid var(--ochre-shadow);
+    box-shadow: 0 0 20px rgba(107, 76, 30, 0.2);
+  }
+
+  /* ============================================================
+     STRING COURSES — horizontal stone bands between tiers
+     ============================================================ */
+  .string-course {
+    position: relative;
+    height: 24px;
+    background: linear-gradient(180deg,
+      var(--ochre-deep) 0%,
+      var(--ochre-mid) 30%,
+      var(--ochre-pale) 50%,
+      var(--ochre-mid) 70%,
+      var(--ochre-deep) 100%);
+    border-top: 1.5px solid var(--ochre-shadow);
+    border-bottom: 1.5px solid var(--ochre-shadow);
+    box-shadow:
+      inset 0 2px 0 rgba(240, 220, 172, 0.4),
+      inset 0 -2px 0 rgba(107, 76, 30, 0.3);
+  }
+  .string-course::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--ochre-shadow);
+    opacity: 0.4;
+  }
+
+  /* ============================================================
+     TYPOGRAPHY INSIDE THE SHAFT
+     ============================================================ */
+  .masthead {
+    text-align: center;
+    padding: 24px 0 22px;
+    border-bottom: 3px double var(--ink);
+    margin-bottom: 8px;
+  }
+  .masthead h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900;
+    font-size: 40px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .masthead .latin {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    text-transform: lowercase;
+  }
+  .masthead .date-line {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  section.block {
+    padding: 26px 0;
+    border-bottom: 1px solid rgba(30, 24, 16, 0.2);
+  }
+  section.block:last-child { border-bottom: none; }
+
+  .kicker {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .kicker .rule { flex: 1; height: 1px; background: var(--ink-faint); }
+  .kicker .status {
+    font-family: 'Lora', serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border: 1px solid var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .kicker .status.live { border-color: var(--accent); color: var(--accent); }
+  .kicker .status.dead { opacity: 0.5; }
+
+  h2.headline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  p { margin-bottom: 10px; }
+  p.standfirst {
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+
+  .status-card { text-align: center; padding: 14px 0; }
+  .status-card .big {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .status-card .big.red { color: var(--accent); }
+  .status-card .sub {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  .division {
+    padding: 14px 0;
+    border-top: 1px solid rgba(30, 24, 16, 0.15);
+  }
+  .division:first-child { border-top: none; }
+  .division-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .division-result {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .tally {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 20px;
+  }
+  .outcome {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 2px 8px;
+    border: 1px solid var(--ink);
+    margin-left: auto;
+  }
+  .outcome.passed { background: var(--ink); color: var(--paper); }
+  .meta {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+
+  details { margin-top: 8px; }
+  details summary {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    cursor: pointer;
+    padding: 4px 0;
+    list-style: none;
+  }
+  details summary::before { content: '+ '; }
+  details[open] summary::before { content: '− '; }
+
+  .loading { font-style: italic; color: var(--ink-faint); font-size: 14px; }
+  .error-note {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    padding: 10px 14px;
+    border-left: 2px solid var(--ink-faint);
+    background: rgba(30, 24, 16, 0.04);
+    margin-top: 8px;
+  }
+
+  .colophon {
+    text-align: center;
+    padding: 36px 0 18px;
+    border-top: 3px double var(--ink);
+    margin-top: 20px;
+  }
+  .colophon p {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+  }
+  .colophon .last-updated {
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 600px) {
+    :root { --tower-width: 100%; }
+    .content { padding: 30px 50px 40px; margin: 0 24px; }
+    .masthead h1 { font-size: 28px; }
+    h2.headline { font-size: 22px; }
+    .status-card .big { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tower">
+
+  <!-- ============================================================
+       TOWER HEAD — roof, spire, clock stage.
+       viewBox width = 560 (same as shaft width at base width 560).
+       The shaft portion of this SVG ends at x=80..480 (400 wide).
+       That 400-wide zone is what the content shaft must align with.
+       ============================================================ -->
+  <div class="tower-head">
+    <svg viewBox="0 0 560 780" xmlns="http://www.w3.org/2000/svg" aria-label="Elizabeth Tower head">
+      <defs>
+        <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"  stop-color="#6b4c1e"/>
+          <stop offset="4%"  stop-color="#9e7636"/>
+          <stop offset="12%" stop-color="#c09554"/>
+          <stop offset="30%" stop-color="#d9b677"/>
+          <stop offset="50%" stop-color="#f0dcac"/>
+          <stop offset="70%" stop-color="#d9b677"/>
+          <stop offset="88%" stop-color="#c09554"/>
+          <stop offset="96%" stop-color="#9e7636"/>
+          <stop offset="100%" stop-color="#6b4c1e"/>
+        </linearGradient>
+        <linearGradient id="stoneBand" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"  stop-color="#9e7636"/>
+          <stop offset="50%" stop-color="#f0dcac"/>
+          <stop offset="100%" stop-color="#9e7636"/>
+        </linearGradient>
+        <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"  stop-color="#3a3428"/>
+          <stop offset="100%" stop-color="#1a1814"/>
+        </linearGradient>
+        <radialGradient id="faceGrad">
+          <stop offset="0%" stop-color="#faf3dd"/>
+          <stop offset="100%" stop-color="#e8d9b0"/>
+        </radialGradient>
+        <!-- Watercolour ink outline filter -->
+        <filter id="ink" x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur stdDeviation="0.3"/>
+        </filter>
+      </defs>
+
+      <!-- ============ SPIRE ============ -->
+      <!-- Weathervane -->
+      <line x1="280" y1="8" x2="280" y2="32" stroke="#1e1810" stroke-width="1.5"/>
+      <circle cx="280" cy="10" r="2.5" fill="#b8893a" stroke="#1e1810" stroke-width="0.5"/>
+      <path d="M 276 18 L 284 18 L 282 24 L 278 24 Z" fill="#b8893a" stroke="#1e1810" stroke-width="0.5"/>
+
+      <!-- Spire main shaft — tall thin triangle -->
+      <path d="M 280 32 L 270 130 L 290 130 Z" fill="#2a2620" stroke="#1e1810" stroke-width="1.2"/>
+      <line x1="280" y1="32" x2="280" y2="130" stroke="#b8893a" stroke-width="0.6" opacity="0.7"/>
+      <!-- Spire base ornamental ring -->
+      <ellipse cx="280" cy="132" rx="14" ry="3" fill="#3a3428" stroke="#1e1810" stroke-width="1"/>
+
+      <!-- ============ PYRAMIDAL IRON ROOF ============ -->
+      <!-- Four-sided pyramid, not ogee. Wider at base (clock stage width), pointed at top. -->
+      <path d="M 280 132 L 170 310 L 390 310 Z" fill="url(#roofGrad)" stroke="#1e1810" stroke-width="1.5"/>
+      <!-- Central ridge (front edge of pyramid) -->
+      <line x1="280" y1="132" x2="280" y2="310" stroke="#1e1810" stroke-width="1" opacity="0.6"/>
+      <!-- Side ridges showing the pyramid form -->
+      <path d="M 280 132 L 170 310" stroke="#1e1810" stroke-width="1.2" fill="none"/>
+      <path d="M 280 132 L 390 310" stroke="#1e1810" stroke-width="1.2" fill="none"/>
+
+      <!-- Iron cresting along the ridges -->
+      <g stroke="#1e1810" stroke-width="0.8" fill="#1a1814">
+        <path d="M 278 180 L 276 175 L 280 175 L 284 175 L 282 180 Z"/>
+        <path d="M 278 220 L 276 215 L 280 215 L 284 215 L 282 220 Z"/>
+        <path d="M 278 260 L 276 255 L 280 255 L 284 255 L 282 260 Z"/>
+      </g>
+
+      <!-- Horizontal banding on roof surface for panel detail -->
+      <path d="M 230 220 L 330 220" stroke="#b8893a" stroke-width="0.6" opacity="0.5"/>
+      <path d="M 210 260 L 350 260" stroke="#b8893a" stroke-width="0.6" opacity="0.5"/>
+
+      <!-- Iron cresting along bottom edge of roof (decorative crown) -->
+      <g fill="#1e1810">
+        <path d="M 175 310 L 178 302 L 182 310 Z"/>
+        <path d="M 195 310 L 198 302 L 202 310 Z"/>
+        <path d="M 215 310 L 218 302 L 222 310 Z"/>
+        <path d="M 235 310 L 238 302 L 242 310 Z"/>
+        <path d="M 255 310 L 258 302 L 262 310 Z"/>
+        <path d="M 275 310 L 278 302 L 282 310 Z"/>
+        <path d="M 295 310 L 298 302 L 302 310 Z"/>
+        <path d="M 315 310 L 318 302 L 322 310 Z"/>
+        <path d="M 335 310 L 338 302 L 342 310 Z"/>
+        <path d="M 355 310 L 358 302 L 362 310 Z"/>
+        <path d="M 375 310 L 378 302 L 382 310 Z"/>
+      </g>
+
+      <!-- ============ CORNER PINNACLES (at roof base / clock stage corners) ============ -->
+      <!-- These rise up alongside the roof, classic Gothic. -->
+      <g>
+        <!-- Left pinnacle -->
+        <path d="M 158 240 L 162 220 L 166 240 L 166 315 L 158 315 Z"
+              fill="url(#stoneGrad)" stroke="#1e1810" stroke-width="1"/>
+        <circle cx="162" cy="218" r="2" fill="#b8893a" stroke="#1e1810" stroke-width="0.4"/>
+        <!-- Right pinnacle -->
+        <path d="M 394 240 L 398 220 L 402 240 L 402 315 L 394 315 Z"
+              fill="url(#stoneGrad)" stroke="#1e1810" stroke-width="1"/>
+        <circle cx="398" cy="218" r="2" fill="#b8893a" stroke="#1e1810" stroke-width="0.4"/>
+      </g>
+
+      <!-- ============ STAGE BELOW ROOF — string course ============ -->
+      <!-- The shaft from here down is EXACTLY 400 wide, from x=80 to x=480 -->
+      <rect x="80" y="315" width="400" height="10" fill="url(#stoneBand)" stroke="#1e1810" stroke-width="1"/>
+      <rect x="80" y="325" width="400" height="4" fill="#6b4c1e"/>
+
+      <!-- Dentil course -->
+      <g fill="#6b4c1e">
+        <rect x="90" y="329" width="4" height="6"/><rect x="104" y="329" width="4" height="6"/>
+        <rect x="118" y="329" width="4" height="6"/><rect x="132" y="329" width="4" height="6"/>
+        <rect x="146" y="329" width="4" height="6"/><rect x="160" y="329" width="4" height="6"/>
+        <rect x="174" y="329" width="4" height="6"/><rect x="188" y="329" width="4" height="6"/>
+        <rect x="202" y="329" width="4" height="6"/><rect x="216" y="329" width="4" height="6"/>
+        <rect x="230" y="329" width="4" height="6"/><rect x="244" y="329" width="4" height="6"/>
+        <rect x="258" y="329" width="4" height="6"/><rect x="272" y="329" width="4" height="6"/>
+        <rect x="286" y="329" width="4" height="6"/><rect x="300" y="329" width="4" height="6"/>
+        <rect x="314" y="329" width="4" height="6"/><rect x="328" y="329" width="4" height="6"/>
+        <rect x="342" y="329" width="4" height="6"/><rect x="356" y="329" width="4" height="6"/>
+        <rect x="370" y="329" width="4" height="6"/><rect x="384" y="329" width="4" height="6"/>
+        <rect x="398" y="329" width="4" height="6"/><rect x="412" y="329" width="4" height="6"/>
+        <rect x="426" y="329" width="4" height="6"/><rect x="440" y="329" width="4" height="6"/>
+        <rect x="454" y="329" width="4" height="6"/><rect x="468" y="329" width="4" height="6"/>
+      </g>
+
+      <!-- ============ CLOCK STAGE — same width as shaft ============ -->
+      <rect x="80" y="335" width="400" height="270" fill="url(#stoneGrad)" stroke="#1e1810" stroke-width="1.5"/>
+
+      <!-- Vertical stone pilasters at clock stage edges -->
+      <rect x="80" y="335" width="16" height="270" fill="#9e7636" stroke="#1e1810" stroke-width="0.8" opacity="0.6"/>
+      <rect x="464" y="335" width="16" height="270" fill="#9e7636" stroke="#1e1810" stroke-width="0.8" opacity="0.6"/>
+
+      <!-- Ashlar horizontal lines on clock stage sides -->
+      <g stroke="#6b4c1e" stroke-width="0.5" opacity="0.5">
+        <line x1="96" y1="355" x2="140" y2="355"/><line x1="420" y1="355" x2="464" y2="355"/>
+        <line x1="96" y1="375" x2="140" y2="375"/><line x1="420" y1="375" x2="464" y2="375"/>
+        <line x1="96" y1="395" x2="140" y2="395"/><line x1="420" y1="395" x2="464" y2="395"/>
+        <line x1="96" y1="415" x2="140" y2="415"/><line x1="420" y1="415" x2="464" y2="415"/>
+        <line x1="96" y1="435" x2="140" y2="435"/><line x1="420" y1="435" x2="464" y2="435"/>
+        <line x1="96" y1="455" x2="140" y2="455"/><line x1="420" y1="455" x2="464" y2="455"/>
+        <line x1="96" y1="475" x2="140" y2="475"/><line x1="420" y1="475" x2="464" y2="475"/>
+        <line x1="96" y1="495" x2="140" y2="495"/><line x1="420" y1="495" x2="464" y2="495"/>
+        <line x1="96" y1="515" x2="140" y2="515"/><line x1="420" y1="515" x2="464" y2="515"/>
+        <line x1="96" y1="535" x2="140" y2="535"/><line x1="420" y1="535" x2="464" y2="535"/>
+        <line x1="96" y1="555" x2="140" y2="555"/><line x1="420" y1="555" x2="464" y2="555"/>
+        <line x1="96" y1="575" x2="140" y2="575"/><line x1="420" y1="575" x2="464" y2="575"/>
+        <line x1="96" y1="595" x2="140" y2="595"/><line x1="420" y1="595" x2="464" y2="595"/>
+      </g>
+
+      <!-- ============ THE CLOCK FACE ============ -->
+      <!-- Large central circle, pointed arch surround above -->
+      <!-- Pointed arch above clock -->
+      <path d="M 160 460 Q 160 345 280 345 Q 400 345 400 460 L 400 580 L 160 580 Z"
+            fill="#1e1810" stroke="#1e1810" stroke-width="1"/>
+      <!-- Inner arch stone frame -->
+      <path d="M 168 460 Q 168 353 280 353 Q 392 353 392 460 L 392 572 L 168 572 Z"
+            fill="none" stroke="#b8893a" stroke-width="2"/>
+
+      <!-- Clock face proper -->
+      <circle cx="280" cy="470" r="95" fill="url(#faceGrad)" stroke="#1e1810" stroke-width="2"/>
+      <circle cx="280" cy="470" r="90" fill="none" stroke="#b8893a" stroke-width="1.5"/>
+      <circle cx="280" cy="470" r="86" fill="none" stroke="#1e1810" stroke-width="0.4"/>
+
+      <!-- Roman numerals -->
+      <g font-family="Playfair Display, serif" font-size="15" font-weight="700" fill="#1e1810" text-anchor="middle">
+        <text x="280" y="398">XII</text>
+        <text x="323" y="407">I</text>
+        <text x="355" y="438">II</text>
+        <text x="367" y="478">III</text>
+        <text x="355" y="518">IV</text>
+        <text x="323" y="544">V</text>
+        <text x="280" y="552">VI</text>
+        <text x="237" y="544">VII</text>
+        <text x="205" y="518">VIII</text>
+        <text x="193" y="478">IX</text>
+        <text x="205" y="438">X</text>
+        <text x="237" y="407">XI</text>
+      </g>
+
+      <!-- Tick marks -->
+      <g stroke="#1e1810" stroke-width="1.2" stroke-linecap="round">
+        <line x1="280" y1="386" x2="280" y2="392"/>
+        <line x1="325" y1="392" x2="323" y2="398"/>
+        <line x1="360" y1="422" x2="356" y2="427"/>
+        <line x1="372" y1="470" x2="366" y2="470"/>
+        <line x1="360" y1="518" x2="356" y2="513"/>
+        <line x1="325" y1="548" x2="323" y2="542"/>
+        <line x1="280" y1="554" x2="280" y2="548"/>
+        <line x1="235" y1="548" x2="237" y2="542"/>
+        <line x1="200" y1="518" x2="204" y2="513"/>
+        <line x1="188" y1="470" x2="194" y2="470"/>
+        <line x1="200" y1="422" x2="204" y2="427"/>
+        <line x1="235" y1="392" x2="237" y2="398"/>
+      </g>
+
+      <!-- Clock hands — driven by JS -->
+      <g id="hand-hour" transform="rotate(0 280 470)">
+        <line x1="280" y1="470" x2="280" y2="412" stroke="#1e1810" stroke-width="4.5" stroke-linecap="round"/>
+      </g>
+      <g id="hand-minute" transform="rotate(0 280 470)">
+        <line x1="280" y1="470" x2="280" y2="392" stroke="#1e1810" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g id="hand-second" transform="rotate(0 280 470)">
+        <line x1="280" y1="470" x2="280" y2="388" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+      </g>
+      <circle cx="280" cy="470" r="5" fill="#b8893a" stroke="#1e1810" stroke-width="1"/>
+
+      <!-- ============ BELOW CLOCK — string course leading to shaft ============ -->
+      <rect x="80" y="605" width="400" height="8" fill="url(#stoneBand)" stroke="#1e1810" stroke-width="1"/>
+      <rect x="80" y="613" width="400" height="4" fill="#6b4c1e"/>
+      <rect x="80" y="617" width="400" height="18" fill="url(#stoneGrad)" stroke="#1e1810" stroke-width="1"/>
+      <!-- Quatrefoil ornaments -->
+      <g fill="#b8893a" stroke="#6b4c1e" stroke-width="0.4">
+        <circle cx="100" cy="626" r="2.5"/><circle cx="130" cy="626" r="2.5"/>
+        <circle cx="160" cy="626" r="2.5"/><circle cx="190" cy="626" r="2.5"/>
+        <circle cx="220" cy="626" r="2.5"/><circle cx="250" cy="626" r="2.5"/>
+        <circle cx="280" cy="626" r="2.5"/><circle cx="310" cy="626" r="2.5"/>
+        <circle cx="340" cy="626" r="2.5"/><circle cx="370" cy="626" r="2.5"/>
+        <circle cx="400" cy="626" r="2.5"/><circle cx="430" cy="626" r="2.5"/>
+        <circle cx="460" cy="626" r="2.5"/>
+      </g>
+      <rect x="80" y="635" width="400" height="4" fill="#6b4c1e"/>
+
+      <!-- ============ TOP OF SHAFT — tall pointed-arch windows begin ============ -->
+      <rect x="80" y="639" width="400" height="140" fill="url(#stoneGrad)" stroke="#1e1810" stroke-width="1.5"/>
+
+      <!-- Outer pilasters -->
+      <rect x="80" y="639" width="12" height="140" fill="#9e7636" stroke="#1e1810" stroke-width="0.6" opacity="0.6"/>
+      <rect x="468" y="639" width="12" height="140" fill="#9e7636" stroke="#1e1810" stroke-width="0.6" opacity="0.6"/>
+
+      <!-- Two pairs of tall pointed-arch windows, characteristic of the Elizabeth Tower -->
+      <g fill="#161d26" stroke="#1e1810" stroke-width="1.2">
+        <path d="M 120 775 L 120 685 Q 120 665 135 665 Q 150 665 150 685 L 150 775 Z"/>
+        <path d="M 160 775 L 160 685 Q 160 665 175 665 Q 190 665 190 685 L 190 775 Z"/>
+        <path d="M 370 775 L 370 685 Q 370 665 385 665 Q 400 665 400 685 L 400 775 Z"/>
+        <path d="M 410 775 L 410 685 Q 410 665 425 665 Q 440 665 440 685 L 440 775 Z"/>
+      </g>
+      <!-- Mullion highlights -->
+      <g stroke="#b8893a" stroke-width="0.6" opacity="0.7">
+        <line x1="135" y1="680" x2="135" y2="775"/>
+        <line x1="175" y1="680" x2="175" y2="775"/>
+        <line x1="385" y1="680" x2="385" y2="775"/>
+        <line x1="425" y1="680" x2="425" y2="775"/>
+      </g>
+      <!-- Central stonework between pairs -->
+      <rect x="210" y="639" width="140" height="140" fill="url(#stoneGrad)"/>
+      <!-- Decorative shield or blank panel in centre -->
+      <rect x="250" y="690" width="60" height="60" fill="none" stroke="#6b4c1e" stroke-width="0.8" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <!-- ============================================================
+       THE SHAFT — content area. Uses the same width as the head SVG,
+       but is inset to the 400-wide "stonework zone" via CSS.
+       The outer 80px either side is stonework continuing the head.
+       ============================================================ -->
+  <div class="shaft">
+    <!-- Pointed-arch windows decorating the shaft interior walls -->
+    <div class="shaft-windows" aria-hidden="true">
+      <svg preserveAspectRatio="none" viewBox="0 0 560 2000" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left stonework pilasters -->
+        <rect x="0" y="0" width="12" height="2000" fill="#6b4c1e" opacity="0.4"/>
+        <rect x="68" y="0" width="12" height="2000" fill="#6b4c1e" opacity="0.4"/>
+        <!-- Right stonework pilasters -->
+        <rect x="480" y="0" width="12" height="2000" fill="#6b4c1e" opacity="0.4"/>
+        <rect x="548" y="0" width="12" height="2000" fill="#6b4c1e" opacity="0.4"/>
+      </svg>
+    </div>
+
+    <div class="content">
+
+      <header class="masthead">
+        <h1>Westminster Watch</h1>
+        <div class="latin">ex turri vigilamus</div>
+        <div class="date-line" id="date-line">—</div>
+      </header>
+
+      <section class="block">
+        <div class="kicker">
+          <span>The House</span>
+          <span class="rule"></span>
+          <span class="status" id="status-house">checking</span>
+        </div>
+        <div class="status-card">
+          <div class="big" id="sitting-status">—</div>
+          <div class="sub" id="sitting-sub">determining status</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="string-course"></div>
+
+  <div class="shaft">
+    <div class="content">
+      <section class="block">
+        <div class="kicker">
+          <span>Recent Divisions</span>
+          <span class="rule"></span>
+          <span class="status" id="status-divisions">checking</span>
+        </div>
+        <h2 class="headline">How the House Voted</h2>
+        <p class="standfirst">The most recent divisions recorded in the Commons chamber.</p>
+        <div id="divisions-list">
+          <div class="loading">Loading divisions…</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="string-course"></div>
+
+  <div class="shaft">
+    <div class="content">
+      <section class="block">
+        <div class="kicker">
+          <span>Order Paper</span>
+          <span class="rule"></span>
+          <span class="status dead">v3</span>
+        </div>
+        <h2 class="headline">Today in the Chamber</h2>
+        <p class="standfirst">Scheduled business requires Parliament's calendar feed, which is not CORS-permissive for direct browser requests. A GitHub Actions rebuild (fetching server-side, committing a static JSON file to the repo) is the route for the next iteration.</p>
+      </section>
+    </div>
+  </div>
+
+  <div class="string-course"></div>
+
+  <div class="shaft">
+    <div class="content">
+      <section class="block">
+        <div class="kicker"><span>Diagnostics</span><span class="rule"></span></div>
+        <details>
+          <summary>Endpoint probe results (tap to expand)</summary>
+          <div id="diagnostics" style="margin-top: 12px; font-family: monospace; font-size: 12px; line-height: 1.6; color: var(--ink-soft);">
+            Results will appear after page load.
+          </div>
+        </details>
+      </section>
+
+      <footer class="colophon">
+        <p>Westminster Watch · a glanceable view from the tower</p>
+        <p class="last-updated" id="last-updated">—</p>
+      </footer>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const diagnostics = [];
+function logDiag(label, status, detail) {
+  diagnostics.push({ label, status, detail });
+  console.log(`[WW] ${label}: ${status}`, detail || '');
+}
+
+function updateClock() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false,
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  }).formatToParts(now);
+  const get = t => parts.find(p => p.type === t)?.value;
+  const h = parseInt(get('hour'), 10) % 12;
+  const m = parseInt(get('minute'), 10);
+  const s = parseInt(get('second'), 10);
+  document.getElementById('hand-second').setAttribute('transform', `rotate(${s * 6} 280 470)`);
+  document.getElementById('hand-minute').setAttribute('transform', `rotate(${m * 6 + s * 0.1} 280 470)`);
+  document.getElementById('hand-hour').setAttribute('transform', `rotate(${h * 30 + m * 0.5} 280 470)`);
+  document.getElementById('date-line').textContent =
+    `${get('weekday')} · ${get('day')} ${get('month')} ${get('year')} · ${get('hour')}:${get('minute')} London`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+async function fetchJSON(url, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(t);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(t);
+    throw err;
+  }
+}
+
+function setStatus(id, ok, label) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = label || (ok ? 'live' : 'unavailable');
+  el.className = 'status ' + (ok ? 'live' : 'dead');
+}
+
+function escapeHTML(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+async function loadSittingStatus(recentDivisions) {
+  try {
+    if (!recentDivisions || !recentDivisions.length) throw new Error('no division data');
+    const todayLondon = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+    const mostRecent = recentDivisions[0];
+    const divDate = mostRecent.Date ? mostRecent.Date.slice(0, 10) : null;
+    if (divDate === todayLondon) {
+      document.getElementById('sitting-status').textContent = 'Sitting';
+      document.getElementById('sitting-status').classList.add('red');
+      document.getElementById('sitting-sub').textContent = 'Division recorded today';
+    } else {
+      const hour = parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false }).format(new Date()), 10);
+      const day = new Date().toLocaleDateString('en-GB', { timeZone: 'Europe/London', weekday: 'long' });
+      const weekday = !['Saturday', 'Sunday'].includes(day);
+      const likely = weekday && hour >= 9 && hour <= 22;
+      document.getElementById('sitting-status').textContent = likely ? 'Possibly Sitting' : 'Not Sitting';
+      document.getElementById('sitting-sub').textContent = `Last division: ${divDate || 'unknown'}`;
+    }
+    setStatus('status-house', true);
+  } catch (err) {
+    document.getElementById('sitting-status').textContent = 'Unknown';
+    document.getElementById('sitting-sub').textContent = 'Could not determine status';
+    setStatus('status-house', false);
+  }
+}
+
+async function loadDivisions() {
+  const url = 'https://commonsvotes-api.parliament.uk/data/divisions.json/search?queryParameters.take=5';
+  try {
+    const data = await fetchJSON(url);
+    logDiag('Commons Votes', 'OK (direct)', url);
+    const divisions = Array.isArray(data) ? data : [];
+    const list = document.getElementById('divisions-list');
+    if (!divisions.length) {
+      list.innerHTML = '<div class="loading">No recent divisions returned.</div>';
+      setStatus('status-divisions', true);
+      return divisions;
+    }
+    list.innerHTML = '';
+    divisions.forEach(div => {
+      const ayes = div.AyeCount ?? 0;
+      const noes = div.NoCount ?? 0;
+      const passed = ayes > noes;
+      const date = div.Date ? new Date(div.Date).toLocaleDateString('en-GB', {
+        timeZone: 'Europe/London', day: 'numeric', month: 'short', year: 'numeric'
+      }) : '';
+      const title = div.Title || 'Untitled Division';
+      const el = document.createElement('div');
+      el.className = 'division';
+      el.innerHTML = `
+        <div class="division-title">${escapeHTML(title)}</div>
+        <div class="division-result">
+          <span>Ayes <span class="tally">${ayes}</span></span>
+          <span>Noes <span class="tally">${noes}</span></span>
+          <span class="outcome ${passed ? 'passed' : ''}">${passed ? 'Passed' : 'Rejected'}</span>
+        </div>
+        <div class="meta">${escapeHTML(date)}</div>
+      `;
+      list.appendChild(el);
+    });
+    setStatus('status-divisions', true);
+    return divisions;
+  } catch (err) {
+    logDiag('Commons Votes', 'FAIL', err.message);
+    document.getElementById('divisions-list').innerHTML =
+      '<div class="error-note">Commons Votes feed unavailable — see diagnostics.</div>';
+    setStatus('status-divisions', false);
+    return [];
+  }
+}
+
+function renderDiagnostics() {
+  const el = document.getElementById('diagnostics');
+  el.innerHTML = diagnostics.length
+    ? diagnostics.map(d => `<div>[${escapeHTML(d.status)}] <strong>${escapeHTML(d.label)}</strong><br>&nbsp;&nbsp;${escapeHTML(d.detail || '')}</div>`).join('<br>')
+    : 'No probe results recorded.';
+}
+
+(async function boot() {
+  const divisions = await loadDivisions();
+  await loadSittingStatus(divisions);
+  renderDiagnostics();
+  const updated = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'long'
+  }).format(new Date());
+  document.getElementById('last-updated').textContent = `Last refreshed · ${updated} London`;
+})();
+</script>
+</body>
+</html>
